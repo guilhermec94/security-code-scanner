@@ -8,7 +8,7 @@ import (
 )
 
 var root = &cobra.Command{
-	Use:   "run",
+	Use:   "start",
 	Short: "Start code analysis tool",
 }
 

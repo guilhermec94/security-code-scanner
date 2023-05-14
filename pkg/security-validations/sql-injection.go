@@ -12,6 +12,14 @@ func NewSqlInjectionCheck(config Config) engine.SecurityCodeCheck {
 	}
 }
 
+func (c SqlInjectionCheck) SendFile(path string) {
+	c.Config.FileChannel <- path
+}
+
+func (c SqlInjectionCheck) CloseChannel() {
+	close(c.FileChannel)
+}
+
 func (s SqlInjectionCheck) Check() error {
 	return nil
 }
