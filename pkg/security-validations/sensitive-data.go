@@ -37,9 +37,7 @@ func (s SensitiveDataCheck) Check() error {
 
 	for i := 0; i < s.NumberWorkers; i++ {
 		wg.Add(1)
-		go func(i int) {
-			s.process(&wg)
-		}(i)
+		s.process(&wg)
 	}
 
 	wg.Wait()

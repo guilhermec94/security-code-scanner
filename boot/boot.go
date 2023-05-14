@@ -9,13 +9,13 @@ func Init() engine.SCSEngine {
 	outputChannel := make(chan string)
 	cSS := setupCrossSiteScriptingCheck(outputChannel)
 	sD := setupSensitiveDataCheck(outputChannel)
-	// sqlI := setupSqlInjectionCheck(outputChannel)
+	sqlI := setupSqlInjectionCheck(outputChannel)
 
 	securityValidationsList := make([]engine.SecurityCodeCheck, 0)
 
 	securityValidationsList = append(securityValidationsList, cSS)
 	securityValidationsList = append(securityValidationsList, sD)
-	// securityValidationsList = append(securityValidationsList, sqlI)
+	securityValidationsList = append(securityValidationsList, sqlI)
 
 	return engine.NewSCSEngine(securityValidationsList)
 }
@@ -40,12 +40,12 @@ func setupSensitiveDataCheck(output chan<- string) engine.SecurityCodeCheck {
 	return securityvalidations.NewSensitiveDataCheck(checkConfig)
 }
 
-// func setupSqlInjectionCheck(output chan<- string) engine.SecurityCodeCheck {
-// 	checkConfig := securityvalidations.Config{
-// 		NumberWorkers: 2,
-// 		FileChannel:   make(chan string),
-// 		OutputChannel: output,
-// 	}
+func setupSqlInjectionCheck(output chan<- string) engine.SecurityCodeCheck {
+	checkConfig := securityvalidations.Config{
+		NumberWorkers: 2,
+		FileChannel:   make(chan string, 100),
+		OutputChannel: output,
+	}
 
-// 	return securityvalidations.NewSqlInjectionCheck(checkConfig)
-// }
+	return securityvalidations.NewSqlInjectionCheck(checkConfig)
+}
