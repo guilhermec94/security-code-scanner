@@ -1,13 +1,12 @@
 package securityvalidations
 
 import (
-	"bufio"
 	"fmt"
-	"log"
-	"os"
 	"path/filepath"
 	"regexp"
 	"sync"
+
+	"github.com/guilhermec94/security-code-scanner/pkg/utils"
 )
 
 type SqlInjectionCheck struct {
@@ -20,7 +19,7 @@ func NewSqlInjectionCheck(config Config) SqlInjectionCheck {
 	}
 }
 
-func (s SqlInjectionCheck) SendFile(path string) {
+func (s SqlInjectionCheck) SubmitFile(path string) {
 	s.FileChannel <- path
 }
 
@@ -51,28 +50,16 @@ func (s SqlInjectionCheck) process(wg *sync.WaitGroup) {
 }
 
 func (s SqlInjectionCheck) analyseFile(path, fileName, extension string) {
-	lineNumber := 1
-
-	file, err := os.Open(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
+	file, scanner := utils.OpenFile(path)
+	defer utils.CloseFile(file)
 
 	pattern := ".*\"(SELECT).*(WHERE).*(%s).*\".*"
 	reg, _ := regexp.Compile(pattern)
 
-	scanner := bufio.NewScanner(file)
-	buf := make([]byte, 0, 64*1024)
-	scanner.Buffer(buf, 1024*1024)
-	for scanner.Scan() {
-		matched := reg.Match(scanner.Bytes())
+	utils.ScanFile(scanner, func(data []byte, lineNumber int) {
+		matched := reg.Match(data)
 		if matched {
 			s.OutputChannel <- fmt.Sprintf("[SQL Injection] in file \"%s\" on line %d", fileName, lineNumber)
 		}
-		lineNumber++
-	}
-	if err := scanner.Err(); err != nil {
-		log.Fatalf("something bad happened in the line %v: %v", lineNumber, err)
-	}
+	})
 }

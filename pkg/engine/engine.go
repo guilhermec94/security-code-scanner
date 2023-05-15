@@ -8,7 +8,7 @@ import (
 )
 
 type SecurityCodeCheck interface {
-	SendFile(path string)
+	SubmitFile(path string)
 	CloseChannel()
 	Check()
 }
@@ -46,7 +46,7 @@ func (s SCSEngine) RunSecurityChecks(sourcePath string, outputType string) error
 		}
 		if !file.IsDir() {
 			for _, c := range s.SecurityValidations {
-				c.SendFile(path)
+				c.SubmitFile(path)
 			}
 		}
 		return nil

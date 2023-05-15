@@ -1,10 +1,7 @@
 package securityvalidations
 
 import (
-	"bufio"
 	"fmt"
-	"log"
-	"os"
 	"path/filepath"
 	"sync"
 
@@ -21,7 +18,7 @@ func NewSensitiveDataCheck(config Config) SensitiveDataCheck {
 	}
 }
 
-func (c SensitiveDataCheck) SendFile(path string) {
+func (c SensitiveDataCheck) SubmitFile(path string) {
 	c.Config.FileChannel <- path
 }
 
@@ -53,25 +50,14 @@ func (s SensitiveDataCheck) process(wg *sync.WaitGroup) {
 }
 
 func (s SensitiveDataCheck) analyseFile(path, fileName, extension string) {
-	lineNumber := 1
+	file, scanner := utils.OpenFile(path)
+	defer utils.CloseFile(file)
 
-	file, err := os.Open(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	buf := make([]byte, 0, 64*1024)
-	scanner.Buffer(buf, 1024*1024)
-	for scanner.Scan() {
-		matched := utils.ContainsSubstrings(scanner.Text(), "Checkmarx", "Hellman & Friedman", "$1.15b")
+	utils.ScanFile(scanner, func(data []byte, lineNumber int) {
+		matched := utils.ContainsSubstrings(string(data), "Checkmarx", "Hellman & Friedman", "$1.15b")
 		if matched {
 			s.OutputChannel <- fmt.Sprintf("[Sensitive Data] in file \"%s\" on line %d", fileName, lineNumber)
 		}
-		lineNumber++
-	}
-	if err := scanner.Err(); err != nil {
-		log.Fatalf("something bad happened in the line %v: %v", lineNumber, err)
-	}
+	})
+
 }
