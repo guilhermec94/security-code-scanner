@@ -2,11 +2,12 @@ package boot
 
 import (
 	"github.com/guilhermec94/security-code-scanner/pkg/engine"
+	"github.com/guilhermec94/security-code-scanner/pkg/outputs"
 	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security-validations"
 )
 
 func Init() engine.SCSEngine {
-	outputChannel := make(chan string)
+	outputChannel := make(chan string, 100)
 	cSS := setupCrossSiteScriptingCheck(outputChannel)
 	sD := setupSensitiveDataCheck(outputChannel)
 	sqlI := setupSqlInjectionCheck(outputChannel)
@@ -17,7 +18,9 @@ func Init() engine.SCSEngine {
 	securityValidationsList = append(securityValidationsList, sD)
 	securityValidationsList = append(securityValidationsList, sqlI)
 
-	return engine.NewSCSEngine(securityValidationsList)
+	outputFormat := outputs.NewPlainTextOutput("/home/jimbob/projects/go/security-code-scanner", outputChannel)
+
+	return engine.NewSCSEngine(securityValidationsList, outputFormat, outputChannel)
 }
 
 func setupCrossSiteScriptingCheck(output chan<- string) engine.SecurityCodeCheck {

@@ -9,15 +9,13 @@ import (
 	"sync"
 
 	"github.com/guilhermec94/security-code-scanner/pkg/utils"
-
-	"github.com/guilhermec94/security-code-scanner/pkg/engine"
 )
 
 type SensitiveDataCheck struct {
 	Config
 }
 
-func NewSensitiveDataCheck(config Config) engine.SecurityCodeCheck {
+func NewSensitiveDataCheck(config Config) SensitiveDataCheck {
 	return SensitiveDataCheck{
 		Config: config,
 	}
@@ -31,7 +29,7 @@ func (c SensitiveDataCheck) CloseChannel() {
 	close(c.FileChannel)
 }
 
-func (s SensitiveDataCheck) Check() error {
+func (s SensitiveDataCheck) Check() {
 	// check file extension to apply current parser
 	var wg sync.WaitGroup
 
@@ -41,8 +39,6 @@ func (s SensitiveDataCheck) Check() error {
 	}
 
 	wg.Wait()
-
-	return nil
 }
 
 func (s SensitiveDataCheck) process(wg *sync.WaitGroup) {
@@ -71,8 +67,7 @@ func (s SensitiveDataCheck) analyseFile(path, fileName, extension string) {
 	for scanner.Scan() {
 		matched := utils.ContainsSubstrings(scanner.Text(), "Checkmarx", "Hellman & Friedman", "$1.15b")
 		if matched {
-			// write to output channel
-			fmt.Printf("[Sensitive Data] in file \"%s\" on line %d \n", fileName, lineNumber)
+			s.OutputChannel <- fmt.Sprintf("[Sensitive Data] in file \"%s\" on line %d", fileName, lineNumber)
 		}
 		lineNumber++
 	}

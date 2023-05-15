@@ -10,29 +10,35 @@ import (
 type SecurityCodeCheck interface {
 	SendFile(path string)
 	CloseChannel()
-	Check() error
+	Check()
+}
+
+type AnalylsisOuputFormat interface {
+	ProcessResults()
 }
 
 type SCSEngine struct {
 	SecurityValidations []SecurityCodeCheck
+	Output              AnalylsisOuputFormat
+	OuputChannel        chan string
 }
 
-func NewSCSEngine(securityValidationList []SecurityCodeCheck) SCSEngine {
+func NewSCSEngine(securityValidationList []SecurityCodeCheck, output AnalylsisOuputFormat, ouputChannel chan string) SCSEngine {
 	return SCSEngine{
 		SecurityValidations: securityValidationList,
+		Output:              output,
+		OuputChannel:        ouputChannel,
 	}
 }
 
 func (s SCSEngine) RunSecurityChecks(sourcePath string, outputType string) error {
 	var wg sync.WaitGroup
-	// get path to scan
-	// write paths to all security check channels
-
-	// start a go routine per check
 	for _, c := range s.SecurityValidations {
 		wg.Add(1)
 		go s.startCheck(c, &wg)
 	}
+
+	go s.OuputResults(&wg)
 
 	err := filepath.WalkDir(sourcePath, func(path string, file fs.DirEntry, err error) error {
 		if err != nil {
@@ -50,16 +56,16 @@ func (s SCSEngine) RunSecurityChecks(sourcePath string, outputType string) error
 		c.CloseChannel()
 	}
 
-	// read results from the checks
-	// write results at the same time the checks are peforming to a file or output format chosen
 	wg.Wait()
+	close(s.OuputChannel)
 	return nil
 }
 
 func (s SCSEngine) startCheck(securityValidation SecurityCodeCheck, wg *sync.WaitGroup) {
-	err := securityValidation.Check()
-	if err != nil {
-		fmt.Print("error")
-	}
+	securityValidation.Check()
 	wg.Done()
+}
+
+func (s SCSEngine) OuputResults(wg *sync.WaitGroup) {
+	s.Output.ProcessResults()
 }
