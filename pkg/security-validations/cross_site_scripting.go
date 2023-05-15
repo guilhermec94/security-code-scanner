@@ -1,7 +1,6 @@
 package securityvalidations
 
 import (
-	"fmt"
 	"path/filepath"
 	"regexp"
 	"sync"
@@ -60,7 +59,7 @@ func (c CrossSiteScriptingCheck) analyseFile(path, fileName, extension string) {
 		utils.ScanFile(scanner, func(data []byte, lineNumber int) {
 			matched := reg.Match(data)
 			if matched {
-				c.OutputChannel <- fmt.Sprintf("[Cross Site Scripting] in file \"%s\" on line %d", fileName, lineNumber)
+				c.OutputChannel <- OuputData{Vulnerability: CROSS_SITE_SCRIPTING, File: fileName, Line: lineNumber}
 			}
 		})
 	}

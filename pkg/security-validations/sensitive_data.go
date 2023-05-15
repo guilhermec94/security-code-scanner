@@ -1,7 +1,6 @@
 package securityvalidations
 
 import (
-	"fmt"
 	"path/filepath"
 	"sync"
 
@@ -56,7 +55,7 @@ func (s SensitiveDataCheck) analyseFile(path, fileName, extension string) {
 	utils.ScanFile(scanner, func(data []byte, lineNumber int) {
 		matched := utils.ContainsSubstrings(string(data), "Checkmarx", "Hellman & Friedman", "$1.15b")
 		if matched {
-			s.OutputChannel <- fmt.Sprintf("[Sensitive Data] in file \"%s\" on line %d", fileName, lineNumber)
+			s.OutputChannel <- OuputData{Vulnerability: SENSITIVE_DATA, File: fileName, Line: lineNumber}
 		}
 	})
 

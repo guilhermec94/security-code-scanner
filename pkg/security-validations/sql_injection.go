@@ -1,7 +1,6 @@
 package securityvalidations
 
 import (
-	"fmt"
 	"path/filepath"
 	"regexp"
 	"sync"
@@ -59,7 +58,7 @@ func (s SqlInjectionCheck) analyseFile(path, fileName, extension string) {
 	utils.ScanFile(scanner, func(data []byte, lineNumber int) {
 		matched := reg.Match(data)
 		if matched {
-			s.OutputChannel <- fmt.Sprintf("[SQL Injection] in file \"%s\" on line %d", fileName, lineNumber)
+			s.OutputChannel <- OuputData{Vulnerability: SQL_INJECTION, File: fileName, Line: lineNumber}
 		}
 	})
 }

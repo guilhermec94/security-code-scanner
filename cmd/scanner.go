@@ -1,26 +1,34 @@
 package cmd
 
 import (
+	"errors"
+
 	"github.com/guilhermec94/security-code-scanner/boot"
 	"github.com/spf13/cobra"
 )
 
-var cmd = &cobra.Command{
+var scanner = &cobra.Command{
 	Use:   "scanner",
 	Short: "Scan source code",
-	Run: func(cmd *cobra.Command, args []string) {
-		// arg 1 - path to source code
-		// arg 2 - output type
-		// arg 3 -
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("the path argument is required")
+		}
+
+		if len(args) < 2 {
+			return errors.New("the output argument is required")
+		}
+
 		runCommand(args)
+		return nil
 	},
 }
 
 func runCommand(args []string) {
-	engine := boot.Init()
+	engine := boot.Init(args[1])
 	engine.RunSecurityChecks(args[0], args[1])
 }
 
 func init() {
-	root.AddCommand(cmd)
+	root.AddCommand(scanner)
 }
