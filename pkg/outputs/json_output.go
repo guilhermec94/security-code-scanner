@@ -6,6 +6,7 @@ import (
 	"os"
 
 	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security-validations"
+	"github.com/sirupsen/logrus"
 )
 
 type JSONOutput struct {
@@ -23,7 +24,7 @@ func NewJSONOutput(outputPath string, outputChannel <-chan securityvalidations.O
 func (j JSONOutput) ProcessResults(done chan bool) {
 	f, err := os.Create(j.OutputPath + "/output.json")
 	if err != nil {
-		fmt.Println(err)
+		logrus.Info(fmt.Sprintf("could not create file: %s\n", err))
 		f.Close()
 		done <- true
 		return
@@ -34,7 +35,7 @@ func (j JSONOutput) ProcessResults(done chan bool) {
 	for res := range j.OutputChannel {
 		jsonData, err := json.MarshalIndent(res, "", "    ")
 		if err != nil {
-			fmt.Printf("could not marshal json: %s\n", err)
+			logrus.Info(fmt.Sprintf("could not marshal json: %s\n", err))
 			done <- true
 			return
 		}
@@ -52,7 +53,7 @@ func (j JSONOutput) ProcessResults(done chan bool) {
 
 	err = f.Close()
 	if err != nil {
-		fmt.Println(err)
+		logrus.Info(fmt.Sprintf("could not close file: %s\n", err))
 		done <- true
 		return
 	}
@@ -62,6 +63,7 @@ func (j JSONOutput) ProcessResults(done chan bool) {
 func (j JSONOutput) write(file *os.File, data string, done chan bool) {
 	_, err := fmt.Fprintln(file, data)
 	if err != nil {
+		logrus.Info(fmt.Sprintf("could not write to file: %s\n", err))
 		done <- true
 	}
 }

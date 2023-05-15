@@ -1,11 +1,13 @@
 package securityvalidations
 
 import (
+	"fmt"
 	"path/filepath"
 	"regexp"
 	"sync"
 
 	"github.com/guilhermec94/security-code-scanner/pkg/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type CrossSiteScriptingCheck struct {
@@ -54,7 +56,10 @@ func (c CrossSiteScriptingCheck) analyseFile(path, fileName, extension string) {
 		defer utils.CloseFile(file)
 
 		pattern := ".*(Alert\\(\\))+.*"
-		reg, _ := regexp.Compile(pattern)
+		reg, err := regexp.Compile(pattern)
+		if err != nil {
+			logrus.Info(fmt.Sprintf("could not compile regex pattern: %s\n", err))
+		}
 
 		utils.ScanFile(scanner, func(data []byte, lineNumber int) {
 			matched := reg.Match(data)
