@@ -52,19 +52,32 @@ func (s SqlInjectionCheck) process(wg *sync.WaitGroup) {
 }
 
 func (s SqlInjectionCheck) analyseFile(path, fileName string) {
-	file, scanner := utils.OpenFile(path)
-	defer utils.CloseFile(file)
+	file, scanner, err := utils.OpenFile(path)
+	defer func() {
+		err := utils.CloseFile(file)
+		if err != nil {
+			s.logger.Fatalf("can't close file %s %v", fileName, err)
+		}
+	}()
+
+	if err != nil {
+		s.logger.Fatalf("can't open file  %s %v", fileName, err)
+	}
 
 	pattern := ".*\"(SELECT).*(WHERE).*(%s).*\".*"
 	reg, err := regexp.Compile(pattern)
 	if err != nil {
 		s.logger.Error(fmt.Sprintf("could not compile regex pattern: %s\n", err))
 	} else {
-		utils.ScanFile(scanner, func(data []byte, lineNumber int) {
+		err = utils.ScanFile(scanner, func(data []byte, lineNumber int) {
 			matched := reg.Match(data)
 			if matched {
 				s.OutputChannel <- OuputData{Vulnerability: SQL_INJECTION, File: fileName, Line: lineNumber}
 			}
 		})
+
+		if err != nil {
+			s.logger.Errorf("error scanning file %s %v", fileName, err)
+		}
 	}
 }

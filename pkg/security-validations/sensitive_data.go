@@ -29,7 +29,6 @@ func (c SensitiveDataCheck) CloseChannel() {
 }
 
 func (s SensitiveDataCheck) Check() {
-	// check file extension to apply current parser
 	var wg sync.WaitGroup
 
 	for i := 0; i < s.NumberWorkers; i++ {
@@ -51,14 +50,29 @@ func (s SensitiveDataCheck) process(wg *sync.WaitGroup) {
 }
 
 func (s SensitiveDataCheck) analyseFile(path, fileName string) {
-	file, scanner := utils.OpenFile(path)
-	defer utils.CloseFile(file)
+	file, scanner, err := utils.OpenFile(path)
+	defer func() {
+		err := utils.CloseFile(file)
+		if err != nil {
+			s.logger.Errorf("can't close file %s %v", fileName, err)
+			return
+		}
+	}()
 
-	utils.ScanFile(scanner, func(data []byte, lineNumber int) {
+	if err != nil {
+		s.logger.Errorf("can't open file  %s %v", fileName, err)
+		return
+	}
+
+	err = utils.ScanFile(scanner, func(data []byte, lineNumber int) {
 		matched := utils.ContainsSubstrings(string(data), "Checkmarx", "Hellman & Friedman", "$1.15b")
 		if matched {
 			s.OutputChannel <- OuputData{Vulnerability: SENSITIVE_DATA, File: fileName, Line: lineNumber}
 		}
 	})
+
+	if err != nil {
+		s.logger.Errorf("error scanning file %s %v", fileName, err)
+	}
 
 }

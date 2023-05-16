@@ -12,19 +12,21 @@ import (
 
 func Init(outputPath, outputType string) engine.SCSEngine {
 	outputChannel := make(chan securityvalidations.OuputData, 100)
-
 	log := logger.GetInstance()
 
+	// checks
 	cSS := setupCrossSiteScriptingCheck(outputChannel, log)
 	sD := setupSensitiveDataCheck(outputChannel, log)
 	sqlI := setupSqlInjectionCheck(outputChannel, log)
 
+	//security validations list
 	securityValidationsList := make([]engine.SecurityCodeCheck, 0)
 
 	securityValidationsList = append(securityValidationsList, cSS)
 	securityValidationsList = append(securityValidationsList, sD)
 	securityValidationsList = append(securityValidationsList, sqlI)
 
+	// set output format
 	var outputFormat engine.AnalylsisOuputFormat
 	switch strings.ToLower(outputType) {
 	case "text":

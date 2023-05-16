@@ -54,20 +54,33 @@ func (c CrossSiteScriptingCheck) process(wg *sync.WaitGroup) {
 
 func (c CrossSiteScriptingCheck) analyseFile(path, fileName, extension string) {
 	if extension == ".html" || extension == ".js" {
-		file, scanner := utils.OpenFile(path)
-		defer utils.CloseFile(file)
+		file, scanner, err := utils.OpenFile(path)
+		defer func() {
+			err := utils.CloseFile(file)
+			if err != nil {
+				c.logger.Fatalf("can't close file %s %v", fileName, err)
+			}
+		}()
+
+		if err != nil {
+			c.logger.Fatalf("can't open file  %s %v", fileName, err)
+		}
 
 		pattern := ".*(Alert\\(\\))+.*"
 		reg, err := regexp.Compile(pattern)
 		if err != nil {
 			c.logger.Error(fmt.Sprintf("could not compile regex pattern: %s\n", err))
 		} else {
-			utils.ScanFile(scanner, func(data []byte, lineNumber int) {
+			err = utils.ScanFile(scanner, func(data []byte, lineNumber int) {
 				matched := reg.Match(data)
 				if matched {
 					c.OutputChannel <- OuputData{Vulnerability: CROSS_SITE_SCRIPTING, File: fileName, Line: lineNumber}
 				}
 			})
+
+			if err != nil {
+				c.logger.Errorf("error scanning file %s %v", fileName, err)
+			}
 		}
 	}
 }

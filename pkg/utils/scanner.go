@@ -2,23 +2,22 @@ package utils
 
 import (
 	"bufio"
-	"github.com/sirupsen/logrus"
 	"os"
 )
 
-func OpenFile(path string) (*os.File, *bufio.Scanner) {
+func OpenFile(path string) (*os.File, *bufio.Scanner, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		logrus.Fatal(err)
+		return nil, nil, err
 	}
 	scanner := bufio.NewScanner(file)
 	buf := make([]byte, 0, 64*1024)
 	scanner.Buffer(buf, 1024*1024)
 
-	return file, scanner
+	return file, scanner, nil
 }
 
-func ScanFile(scanner *bufio.Scanner, f func(data []byte, lineNumber int)) {
+func ScanFile(scanner *bufio.Scanner, f func(data []byte, lineNumber int)) error {
 	lineCounter := 1
 	for scanner.Scan() {
 		f(scanner.Bytes(), lineCounter)
@@ -26,10 +25,11 @@ func ScanFile(scanner *bufio.Scanner, f func(data []byte, lineNumber int)) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		logrus.Fatalf("something bad happened in the line %v: %v", lineCounter, err)
+		return err
 	}
+	return nil
 }
 
-func CloseFile(file *os.File) {
-	file.Close()
+func CloseFile(file *os.File) error {
+	return file.Close()
 }

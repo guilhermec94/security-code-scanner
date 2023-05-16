@@ -1,10 +1,12 @@
 package securityvalidations_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/guilhermec94/security-code-scanner/pkg/logger"
 	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security-validations"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -37,7 +39,35 @@ func TestSensitiveDataCheck_Check(t *testing.T) {
 		check.Check()
 
 		// assert
-		// TODO: validate log file and contents
+		fi, err := os.Stat("log.txt")
+		if err != nil {
+			logrus.Fatal(err)
+		}
+
+		size := fi.Size()
 		assert.Equal(t, len(outputChannel), 1)
+		assert.Equal(t, size, int64(0))
+	})
+
+	t.Run("error", func(t *testing.T) {
+		// setup
+		check, outputChannel := setup()
+
+		// send test data to channel
+		check.SubmitFile("/home/guilhermecarvalho/projects/personal/security-code-scanner/test_files_test")
+		check.CloseChannel()
+
+		// call method
+		check.Check()
+
+		// assert
+		fi, err := os.Stat("log.txt")
+		if err != nil {
+			logrus.Fatal(err)
+		}
+
+		size := fi.Size()
+		assert.Equal(t, len(outputChannel), 0)
+		assert.Greater(t, size, int64(0))
 	})
 }
