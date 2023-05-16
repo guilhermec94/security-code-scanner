@@ -47,7 +47,7 @@ func TestSensitiveDataCheck(t *testing.T) {
 		check, outputChannel := setupSensitiveDataCheckTest()
 
 		// send test data to channel
-		absPath, err := filepath.Abs("../test_files/some_data.txt")
+		absPath, err := filepath.Abs("../test_files/java/GameData.java")
 		if err != nil {
 			logrus.Fatal(err)
 		}
@@ -74,7 +74,7 @@ func TestSensitiveDataCheck(t *testing.T) {
 		check, outputChannel := setupSensitiveDataCheckTest()
 
 		// send test data to channel
-		absPath, err := filepath.Abs("../test_files_test/some_data.txt")
+		absPath, err := filepath.Abs("../test_files_test/java/GameData.java")
 		if err != nil {
 			logrus.Fatal(err)
 		}
