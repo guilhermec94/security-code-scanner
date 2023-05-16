@@ -2,14 +2,14 @@ package utils
 
 import (
 	"bufio"
-	"log"
+	"github.com/sirupsen/logrus"
 	"os"
 )
 
 func OpenFile(path string) (*os.File, *bufio.Scanner) {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	scanner := bufio.NewScanner(file)
 	buf := make([]byte, 0, 64*1024)
@@ -26,7 +26,7 @@ func ScanFile(scanner *bufio.Scanner, f func(data []byte, lineNumber int)) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Fatalf("something bad happened in the line %v: %v", lineCounter, err)
+		logrus.Fatalf("something bad happened in the line %v: %v", lineCounter, err)
 	}
 }
 

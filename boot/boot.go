@@ -8,7 +8,7 @@ import (
 	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security-validations"
 )
 
-func Init(outputType string) engine.SCSEngine {
+func Init(outputPath, outputType string) engine.SCSEngine {
 	outputChannel := make(chan securityvalidations.OuputData, 100)
 	cSS := setupCrossSiteScriptingCheck(outputChannel)
 	sD := setupSensitiveDataCheck(outputChannel)
@@ -23,9 +23,9 @@ func Init(outputType string) engine.SCSEngine {
 	var outputFormat engine.AnalylsisOuputFormat
 	switch strings.ToLower(outputType) {
 	case "text":
-		outputFormat = outputs.NewPlainTextOutput("/home/jimbob/projects/go/security-code-scanner", outputChannel)
+		outputFormat = outputs.NewPlainTextOutput(outputPath, outputChannel)
 	case "json":
-		outputFormat = outputs.NewJSONOutput("/home/jimbob/projects/go/security-code-scanner", outputChannel)
+		outputFormat = outputs.NewJSONOutput(outputPath, outputChannel)
 	}
 
 	return engine.NewSCSEngine(securityValidationsList, outputFormat, outputChannel)

@@ -26,11 +26,11 @@ type SCSEngine struct {
 	OuputChannel        chan securityvalidations.OuputData
 }
 
-func NewSCSEngine(securityValidationList []SecurityCodeCheck, output AnalylsisOuputFormat, ouputChannel chan securityvalidations.OuputData) SCSEngine {
+func NewSCSEngine(securityValidationList []SecurityCodeCheck, output AnalylsisOuputFormat, outputChannel chan securityvalidations.OuputData) SCSEngine {
 	return SCSEngine{
 		SecurityValidations: securityValidationList,
 		Output:              output,
-		OuputChannel:        ouputChannel,
+		OuputChannel:        outputChannel,
 	}
 }
 
@@ -43,7 +43,7 @@ func (s SCSEngine) RunSecurityChecks(sourcePath string) error {
 		go s.startCheck(c, &wg)
 	}
 
-	go s.OuputResults(&wg, doneReadingResults)
+	go s.ouputResults(doneReadingResults)
 
 	err := filepath.WalkDir(sourcePath, func(path string, file fs.DirEntry, err error) error {
 		if err != nil {
@@ -78,6 +78,6 @@ func (s SCSEngine) startCheck(securityValidation SecurityCodeCheck, wg *sync.Wai
 	wg.Done()
 }
 
-func (s SCSEngine) OuputResults(wg *sync.WaitGroup, done chan bool) {
+func (s SCSEngine) ouputResults(done chan bool) {
 	s.Output.ProcessResults(done)
 }

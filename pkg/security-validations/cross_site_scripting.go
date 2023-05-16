@@ -59,13 +59,13 @@ func (c CrossSiteScriptingCheck) analyseFile(path, fileName, extension string) {
 		reg, err := regexp.Compile(pattern)
 		if err != nil {
 			logrus.Info(fmt.Sprintf("could not compile regex pattern: %s\n", err))
+		} else {
+			utils.ScanFile(scanner, func(data []byte, lineNumber int) {
+				matched := reg.Match(data)
+				if matched {
+					c.OutputChannel <- OuputData{Vulnerability: CROSS_SITE_SCRIPTING, File: fileName, Line: lineNumber}
+				}
+			})
 		}
-
-		utils.ScanFile(scanner, func(data []byte, lineNumber int) {
-			matched := reg.Match(data)
-			if matched {
-				c.OutputChannel <- OuputData{Vulnerability: CROSS_SITE_SCRIPTING, File: fileName, Line: lineNumber}
-			}
-		})
 	}
 }

@@ -16,7 +16,11 @@ var scanner = &cobra.Command{
 		}
 
 		if len(args) < 2 {
-			return errors.New("the output argument is required")
+			return errors.New("the output path argument is required")
+		}
+
+		if len(args) < 3 {
+			return errors.New("the output format argument is required")
 		}
 
 		runCommand(args)
@@ -25,7 +29,7 @@ var scanner = &cobra.Command{
 }
 
 func runCommand(args []string) {
-	engine := boot.Init(args[1])
+	engine := boot.Init(args[1], args[2])
 	engine.RunSecurityChecks(args[0])
 }
 
