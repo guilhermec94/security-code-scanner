@@ -56,12 +56,14 @@ func (s SqlInjectionCheck) analyseFile(path, fileName string) {
 	defer func() {
 		err := utils.CloseFile(file)
 		if err != nil {
-			s.logger.Fatalf("can't close file %s %v", fileName, err)
+			s.logger.Errorf("can't close file %s %v", fileName, err)
+			return
 		}
 	}()
 
 	if err != nil {
-		s.logger.Fatalf("can't open file  %s %v", fileName, err)
+		s.logger.Errorf("can't open file  %s %v", fileName, err)
+		return
 	}
 
 	pattern := ".*\"(SELECT).*(WHERE).*(%s).*\".*"

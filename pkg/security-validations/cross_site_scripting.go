@@ -58,12 +58,14 @@ func (c CrossSiteScriptingCheck) analyseFile(path, fileName, extension string) {
 		defer func() {
 			err := utils.CloseFile(file)
 			if err != nil {
-				c.logger.Fatalf("can't close file %s %v", fileName, err)
+				c.logger.Errorf("can't close file %s %v", fileName, err)
+				return
 			}
 		}()
 
 		if err != nil {
-			c.logger.Fatalf("can't open file  %s %v", fileName, err)
+			c.logger.Errorf("can't open file  %s %v", fileName, err)
+			return
 		}
 
 		pattern := ".*(Alert\\(\\))+.*"

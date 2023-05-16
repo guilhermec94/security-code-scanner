@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setupSensitiveDataCheckTest() (securityvalidations.SensitiveDataCheck, chan securityvalidations.OuputData) {
+func setupCrossSiteScriptingCheckTest() (securityvalidations.CrossSiteScriptingCheck, chan securityvalidations.OuputData) {
 	fileChan := make(chan string, 100)
 	outputChannel := make(chan securityvalidations.OuputData, 100)
 	config := securityvalidations.Config{
@@ -20,7 +20,7 @@ func setupSensitiveDataCheckTest() (securityvalidations.SensitiveDataCheck, chan
 	}
 
 	log := logrus.New()
-	logFile := "log-sd.txt"
+	logFile := "log-css.txt"
 	file, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		fmt.Println("Failed to create logfile" + logFile)
@@ -28,55 +28,55 @@ func setupSensitiveDataCheckTest() (securityvalidations.SensitiveDataCheck, chan
 	}
 	log.SetOutput(file)
 
-	check := securityvalidations.NewSensitiveDataCheck(config, log)
+	check := securityvalidations.NewCrossSiteScriptingCheck(config, log)
 
 	return check, outputChannel
 }
 
-func cleanUpSensitiveDataCheckTest() {
-	e := os.Remove("log-sd.txt")
+func cleanUpCrossSiteScriptingCheckTest() {
+	e := os.Remove("log-css.txt")
 	if e != nil {
 		logrus.Fatal(e)
 	}
 }
 
-func TestSensitiveDataCheck(t *testing.T) {
+func TestCrossSiteScriptingCheck_Check(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// setup
-		check, outputChannel := setupSensitiveDataCheckTest()
+		check, outputChannel := setupCrossSiteScriptingCheckTest()
 
 		// send test data to channel
-		check.SubmitFile("/home/jimbob/projects/go/security-code-scanner/test_files/some_data.txt")
+		check.SubmitFile("/home/jimbob/projects/go/security-code-scanner/test_files/html/test.html")
 		check.CloseChannel()
 
 		// call method
 		check.Check()
 
 		// assert
-		fi, err := os.Stat("log-sd.txt")
+		fi, err := os.Stat("log-css.txt")
 		if err != nil {
 			logrus.Fatal(err)
 		}
 
 		size := fi.Size()
-		assert.Equal(t, 1, len(outputChannel))
+		assert.Equal(t, 4, len(outputChannel))
 		assert.Equal(t, int64(0), size)
-		t.Cleanup(func() { cleanUpSensitiveDataCheckTest() })
+		t.Cleanup(func() { cleanUpCrossSiteScriptingCheckTest() })
 	})
 
 	t.Run("error", func(t *testing.T) {
 		// setup
-		check, outputChannel := setupSensitiveDataCheckTest()
+		check, outputChannel := setupCrossSiteScriptingCheckTest()
 
 		// send test data to channel
-		check.SubmitFile("/home/jimbob/projects/go/security-code-scanner/test_files_test/some_data.txt")
+		check.SubmitFile("/home/jimbob/projects/go/security-code-scanner/test_files_test/test.html")
 		check.CloseChannel()
 
 		// call method
 		check.Check()
 
 		// assert
-		fi, err := os.Stat("log-sd.txt")
+		fi, err := os.Stat("log-css.txt")
 		if err != nil {
 			logrus.Fatal(err)
 		}
@@ -84,7 +84,7 @@ func TestSensitiveDataCheck(t *testing.T) {
 		size := fi.Size()
 		assert.Equal(t, 0, len(outputChannel))
 		assert.Greater(t, size, int64(0))
-		t.Cleanup(func() { cleanUpSensitiveDataCheckTest() })
+		t.Cleanup(func() { cleanUpCrossSiteScriptingCheckTest() })
 	})
 
 }
