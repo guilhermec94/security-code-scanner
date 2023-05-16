@@ -34,7 +34,7 @@ func NewSCSEngine(securityValidationList []SecurityCodeCheck, output AnalylsisOu
 	}
 }
 
-func (s SCSEngine) RunSecurityChecks(sourcePath string, outputType string) error {
+func (s SCSEngine) RunSecurityChecks(sourcePath string) error {
 	var wg sync.WaitGroup
 	doneReadingResults := make(chan bool)
 

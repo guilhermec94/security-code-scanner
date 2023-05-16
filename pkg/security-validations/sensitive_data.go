@@ -42,13 +42,12 @@ func (s SensitiveDataCheck) process(wg *sync.WaitGroup) {
 
 	for path := range s.FileChannel {
 		fileName := filepath.Base(path)
-		extension := filepath.Ext(path)
-		s.analyseFile(path, fileName, extension)
+		s.analyseFile(path, fileName)
 	}
 
 }
 
-func (s SensitiveDataCheck) analyseFile(path, fileName, extension string) {
+func (s SensitiveDataCheck) analyseFile(path, fileName string) {
 	file, scanner := utils.OpenFile(path)
 	defer utils.CloseFile(file)
 

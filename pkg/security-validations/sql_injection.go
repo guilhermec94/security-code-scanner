@@ -44,13 +44,12 @@ func (s SqlInjectionCheck) process(wg *sync.WaitGroup) {
 
 	for path := range s.FileChannel {
 		fileName := filepath.Base(path)
-		extension := filepath.Ext(path)
-		s.analyseFile(path, fileName, extension)
+		s.analyseFile(path, fileName)
 	}
 
 }
 
-func (s SqlInjectionCheck) analyseFile(path, fileName, extension string) {
+func (s SqlInjectionCheck) analyseFile(path, fileName string) {
 	file, scanner := utils.OpenFile(path)
 	defer utils.CloseFile(file)
 
