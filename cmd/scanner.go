@@ -29,8 +29,8 @@ var scanner = &cobra.Command{
 }
 
 func runCommand(args []string) {
-	engine := boot.Init(args[1], args[2])
-	engine.RunSecurityChecks(args[0])
+	engine := boot.Init(args[0], args[2])
+	engine.RunSecurityChecks(args[1])
 }
 
 func init() {

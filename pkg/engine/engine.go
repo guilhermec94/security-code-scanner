@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/guilhermec94/security-code-scanner/pkg/logger"
 	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security-validations"
 	"github.com/sirupsen/logrus"
 )
@@ -24,19 +25,23 @@ type SCSEngine struct {
 	SecurityValidations []SecurityCodeCheck
 	Output              AnalylsisOuputFormat
 	OuputChannel        chan securityvalidations.OuputData
+	logger              *logrus.Logger
 }
 
-func NewSCSEngine(securityValidationList []SecurityCodeCheck, output AnalylsisOuputFormat, outputChannel chan securityvalidations.OuputData) SCSEngine {
+func NewSCSEngine(securityValidationList []SecurityCodeCheck, output AnalylsisOuputFormat, outputChannel chan securityvalidations.OuputData, logger *logrus.Logger) SCSEngine {
 	return SCSEngine{
 		SecurityValidations: securityValidationList,
 		Output:              output,
 		OuputChannel:        outputChannel,
+		logger:              logger,
 	}
 }
 
 func (s SCSEngine) RunSecurityChecks(sourcePath string) error {
 	var wg sync.WaitGroup
 	doneReadingResults := make(chan bool)
+
+	defer logger.CloseLog()
 
 	for _, c := range s.SecurityValidations {
 		wg.Add(1)
@@ -47,7 +52,7 @@ func (s SCSEngine) RunSecurityChecks(sourcePath string) error {
 
 	err := filepath.WalkDir(sourcePath, func(path string, file fs.DirEntry, err error) error {
 		if err != nil {
-			logrus.Info(fmt.Sprintf("could not walk path %s : %s\n", path, err))
+			s.logger.Error(fmt.Sprintf("could not walk path %s : %s\n", path, err))
 			return err
 		}
 		if !file.IsDir() {
@@ -59,7 +64,7 @@ func (s SCSEngine) RunSecurityChecks(sourcePath string) error {
 	})
 
 	if err != nil {
-		logrus.Info(fmt.Sprintf("could not walk path %s : %s\n", sourcePath, err))
+		s.logger.Error(fmt.Sprintf("could not walk path %s : %s\n", sourcePath, err))
 	}
 
 	for _, c := range s.SecurityValidations {

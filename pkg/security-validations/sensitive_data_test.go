@@ -3,6 +3,7 @@ package securityvalidations_test
 import (
 	"testing"
 
+	"github.com/guilhermec94/security-code-scanner/pkg/logger"
 	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security-validations"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,7 +16,10 @@ func setup() (securityvalidations.SensitiveDataCheck, chan securityvalidations.O
 		FileChannel:   fileChan,
 		OutputChannel: outputChannel,
 	}
-	check := securityvalidations.NewSensitiveDataCheck(config)
+
+	log := logger.GetInstance()
+
+	check := securityvalidations.NewSensitiveDataCheck(config, log)
 
 	return check, outputChannel
 }
@@ -33,6 +37,7 @@ func TestSensitiveDataCheck_Check(t *testing.T) {
 		check.Check()
 
 		// assert
+		// TODO: validate log file and contents
 		assert.Equal(t, len(outputChannel), 1)
 	})
 }

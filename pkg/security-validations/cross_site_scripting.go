@@ -12,11 +12,13 @@ import (
 
 type CrossSiteScriptingCheck struct {
 	Config
+	logger *logrus.Logger
 }
 
-func NewCrossSiteScriptingCheck(config Config) CrossSiteScriptingCheck {
+func NewCrossSiteScriptingCheck(config Config, logger *logrus.Logger) CrossSiteScriptingCheck {
 	return CrossSiteScriptingCheck{
 		Config: config,
+		logger: logger,
 	}
 }
 
@@ -58,7 +60,7 @@ func (c CrossSiteScriptingCheck) analyseFile(path, fileName, extension string) {
 		pattern := ".*(Alert\\(\\))+.*"
 		reg, err := regexp.Compile(pattern)
 		if err != nil {
-			logrus.Info(fmt.Sprintf("could not compile regex pattern: %s\n", err))
+			c.logger.Error(fmt.Sprintf("could not compile regex pattern: %s\n", err))
 		} else {
 			utils.ScanFile(scanner, func(data []byte, lineNumber int) {
 				matched := reg.Match(data)

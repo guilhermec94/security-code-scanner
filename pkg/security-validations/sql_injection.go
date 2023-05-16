@@ -12,11 +12,13 @@ import (
 
 type SqlInjectionCheck struct {
 	Config
+	logger *logrus.Logger
 }
 
-func NewSqlInjectionCheck(config Config) SqlInjectionCheck {
+func NewSqlInjectionCheck(config Config, logger *logrus.Logger) SqlInjectionCheck {
 	return SqlInjectionCheck{
 		Config: config,
+		logger: logger,
 	}
 }
 
@@ -56,7 +58,7 @@ func (s SqlInjectionCheck) analyseFile(path, fileName string) {
 	pattern := ".*\"(SELECT).*(WHERE).*(%s).*\".*"
 	reg, err := regexp.Compile(pattern)
 	if err != nil {
-		logrus.Info(fmt.Sprintf("could not compile regex pattern: %s\n", err))
+		s.logger.Error(fmt.Sprintf("could not compile regex pattern: %s\n", err))
 	} else {
 		utils.ScanFile(scanner, func(data []byte, lineNumber int) {
 			matched := reg.Match(data)

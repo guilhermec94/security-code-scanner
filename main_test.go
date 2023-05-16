@@ -1,4 +1,4 @@
-package main
+package main_test
 
 import (
 	"testing"
@@ -7,6 +7,6 @@ import (
 )
 
 func BenchmarkTool(b *testing.B) {
-	engine := boot.Init("text")
-	engine.RunSecurityChecks("/home/jimbob/projects/go/tsource", "test")
+	engine := boot.Init(".", "text")
+	engine.RunSecurityChecks("/home/jimbob/projects/go/tsource")
 }

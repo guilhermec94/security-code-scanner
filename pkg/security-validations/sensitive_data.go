@@ -5,15 +5,18 @@ import (
 	"sync"
 
 	"github.com/guilhermec94/security-code-scanner/pkg/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type SensitiveDataCheck struct {
 	Config
+	logger *logrus.Logger
 }
 
-func NewSensitiveDataCheck(config Config) SensitiveDataCheck {
+func NewSensitiveDataCheck(config Config, logger *logrus.Logger) SensitiveDataCheck {
 	return SensitiveDataCheck{
 		Config: config,
+		logger: logger,
 	}
 }
 

@@ -11,12 +11,14 @@ import (
 type PlainTextOutput struct {
 	OutputPath    string
 	OutputChannel <-chan securityvalidations.OuputData
+	logger        *logrus.Logger
 }
 
-func NewPlainTextOutput(outputPath string, outputChannel <-chan securityvalidations.OuputData) PlainTextOutput {
+func NewPlainTextOutput(outputPath string, outputChannel <-chan securityvalidations.OuputData, logger *logrus.Logger) PlainTextOutput {
 	return PlainTextOutput{
 		OutputPath:    outputPath,
 		OutputChannel: outputChannel,
+		logger:        logger,
 	}
 }
 
@@ -24,7 +26,7 @@ func (p PlainTextOutput) ProcessResults(done chan bool) {
 	// TODO: slash windows/linux ?
 	f, err := os.Create(p.OutputPath + "/output.txt")
 	if err != nil {
-		logrus.Info(fmt.Sprintf("could not create file: %s\n", err))
+		p.logger.Error(fmt.Sprintf("could not create file: %s\n", err))
 		f.Close()
 		done <- true
 		return
@@ -35,7 +37,7 @@ func (p PlainTextOutput) ProcessResults(done chan bool) {
 	}
 	err = f.Close()
 	if err != nil {
-		logrus.Info(fmt.Sprintf("could not close file: %s\n", err))
+		p.logger.Error(fmt.Sprintf("could not close file: %s\n", err))
 		done <- true
 		return
 	}
@@ -45,7 +47,7 @@ func (p PlainTextOutput) ProcessResults(done chan bool) {
 func (p PlainTextOutput) write(file *os.File, data string, done chan bool) {
 	_, err := fmt.Fprintln(file, data)
 	if err != nil {
-		logrus.Info(fmt.Sprintf("could not write to file: %s\n", err))
+		p.logger.Error(fmt.Sprintf("could not write to file: %s\n", err))
 		done <- true
 	}
 }
