@@ -6,12 +6,12 @@ import (
 	"path/filepath"
 	"testing"
 
-	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security-validations"
+	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security_validations"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
-func setupSqlInjectionCheckTest() (securityvalidations.SqlInjectionCheck, chan securityvalidations.OuputData) {
+func setupSensitiveDataCheckTest() (securityvalidations.SensitiveDataCheck, chan securityvalidations.OuputData) {
 	fileChan := make(chan string, 100)
 	outputChannel := make(chan securityvalidations.OuputData, 100)
 	config := securityvalidations.Config{
@@ -21,7 +21,7 @@ func setupSqlInjectionCheckTest() (securityvalidations.SqlInjectionCheck, chan s
 	}
 
 	log := logrus.New()
-	logFile := "log-si.txt"
+	logFile := "log-sd.txt"
 	file, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		fmt.Println("Failed to create logfile" + logFile)
@@ -29,25 +29,25 @@ func setupSqlInjectionCheckTest() (securityvalidations.SqlInjectionCheck, chan s
 	}
 	log.SetOutput(file)
 
-	check := securityvalidations.NewSqlInjectionCheck(config, log)
+	check := securityvalidations.NewSensitiveDataCheck(config, log)
 
 	return check, outputChannel
 }
 
-func cleanUpSqlInjectionCheckTest() {
-	e := os.Remove("log-si.txt")
+func cleanUpSensitiveDataCheckTest() {
+	e := os.Remove("log-sd.txt")
 	if e != nil {
 		logrus.Fatal(e)
 	}
 }
 
-func TestSqlInjectionCheck(t *testing.T) {
+func TestSensitiveDataCheck(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// setup
-		check, outputChannel := setupSqlInjectionCheckTest()
+		check, outputChannel := setupSensitiveDataCheckTest()
 
 		// send test data to channel
-		absPath, err := filepath.Abs("../test_files/java/ConfigContainer.java")
+		absPath, err := filepath.Abs("../test_files/java/GameData.java")
 		if err != nil {
 			logrus.Fatal(err)
 		}
@@ -58,23 +58,23 @@ func TestSqlInjectionCheck(t *testing.T) {
 		check.Check()
 
 		// assert
-		fi, err := os.Stat("log-si.txt")
+		fi, err := os.Stat("log-sd.txt")
 		if err != nil {
 			logrus.Fatal(err)
 		}
 
 		size := fi.Size()
-		assert.Equal(t, 2, len(outputChannel))
+		assert.Equal(t, 1, len(outputChannel))
 		assert.Equal(t, int64(0), size)
-		t.Cleanup(func() { cleanUpSqlInjectionCheckTest() })
+		t.Cleanup(func() { cleanUpSensitiveDataCheckTest() })
 	})
 
 	t.Run("error", func(t *testing.T) {
 		// setup
-		check, outputChannel := setupSqlInjectionCheckTest()
+		check, outputChannel := setupSensitiveDataCheckTest()
 
 		// send test data to channel
-		absPath, err := filepath.Abs("../test_files_test/java/ConfigContainer.java")
+		absPath, err := filepath.Abs("../test_files_test/java/GameData.java")
 		if err != nil {
 			logrus.Fatal(err)
 		}
@@ -85,7 +85,7 @@ func TestSqlInjectionCheck(t *testing.T) {
 		check.Check()
 
 		// assert
-		fi, err := os.Stat("log-si.txt")
+		fi, err := os.Stat("log-sd.txt")
 		if err != nil {
 			logrus.Fatal(err)
 		}
@@ -93,6 +93,7 @@ func TestSqlInjectionCheck(t *testing.T) {
 		size := fi.Size()
 		assert.Equal(t, 0, len(outputChannel))
 		assert.Greater(t, size, int64(0))
-		t.Cleanup(func() { cleanUpSqlInjectionCheckTest() })
+		t.Cleanup(func() { cleanUpSensitiveDataCheckTest() })
 	})
+
 }

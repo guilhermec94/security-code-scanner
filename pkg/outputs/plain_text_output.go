@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security-validations"
+	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security_validations"
 	"github.com/sirupsen/logrus"
 )
 

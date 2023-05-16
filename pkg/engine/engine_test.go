@@ -9,7 +9,7 @@ import (
 
 	"github.com/guilhermec94/security-code-scanner/pkg/engine"
 	"github.com/guilhermec94/security-code-scanner/pkg/outputs"
-	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security-validations"
+	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security_validations"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
