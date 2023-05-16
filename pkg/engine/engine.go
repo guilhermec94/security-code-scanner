@@ -37,7 +37,7 @@ func NewSCSEngine(securityValidationList []SecurityValidation, output AnalylsisO
 	}
 }
 
-func (s SCSEngine) RunSecurityChecks(sourcePath string) error {
+func (s SCSEngine) RunSecurityChecks(sourcePath string) {
 	var wg sync.WaitGroup
 	doneReadingResults := make(chan bool)
 
@@ -65,6 +65,7 @@ func (s SCSEngine) RunSecurityChecks(sourcePath string) error {
 
 	if err != nil {
 		s.logger.Error(fmt.Sprintf("error searching path %s : %s\n", sourcePath, err))
+		return
 	}
 
 	for _, c := range s.SecurityValidations {
@@ -74,8 +75,6 @@ func (s SCSEngine) RunSecurityChecks(sourcePath string) error {
 	wg.Wait()
 	close(s.OuputChannel)
 	<-doneReadingResults
-
-	return nil
 }
 
 func (s SCSEngine) startCheck(securityValidation SecurityValidation, wg *sync.WaitGroup) {

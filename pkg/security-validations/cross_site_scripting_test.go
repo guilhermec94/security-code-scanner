@@ -3,6 +3,7 @@ package securityvalidations_test
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
 	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security-validations"
@@ -40,13 +41,17 @@ func cleanUpCrossSiteScriptingCheckTest() {
 	}
 }
 
-func TestCrossSiteScriptingCheck_Check(t *testing.T) {
+func TestCrossSiteScriptingCheck(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// setup
 		check, outputChannel := setupCrossSiteScriptingCheckTest()
 
 		// send test data to channel
-		check.SubmitFile("/home/jimbob/projects/go/security-code-scanner/test_files/html/test.html")
+		absPath, err := filepath.Abs("../test_files/html/test.html")
+		if err != nil {
+			logrus.Fatal(err)
+		}
+		check.SubmitFile(absPath)
 		check.CloseChannel()
 
 		// call method
@@ -69,7 +74,11 @@ func TestCrossSiteScriptingCheck_Check(t *testing.T) {
 		check, outputChannel := setupCrossSiteScriptingCheckTest()
 
 		// send test data to channel
-		check.SubmitFile("/home/jimbob/projects/go/security-code-scanner/test_files_test/test.html")
+		absPath, err := filepath.Abs("../test_files_test/html/test.html")
+		if err != nil {
+			logrus.Fatal(err)
+		}
+		check.SubmitFile(absPath)
 		check.CloseChannel()
 
 		// call method
