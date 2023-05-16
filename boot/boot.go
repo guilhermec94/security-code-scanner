@@ -20,7 +20,7 @@ func Init(outputPath, outputType string) engine.SCSEngine {
 	sqlI := setupSqlInjectionCheck(outputChannel, log)
 
 	//security validations list
-	securityValidationsList := make([]engine.SecurityCodeCheck, 0)
+	securityValidationsList := make([]engine.SecurityValidation, 0)
 
 	securityValidationsList = append(securityValidationsList, cSS)
 	securityValidationsList = append(securityValidationsList, sD)
@@ -38,7 +38,7 @@ func Init(outputPath, outputType string) engine.SCSEngine {
 	return engine.NewSCSEngine(securityValidationsList, outputFormat, outputChannel, log)
 }
 
-func setupCrossSiteScriptingCheck(output chan<- securityvalidations.OuputData, logger *logrus.Logger) engine.SecurityCodeCheck {
+func setupCrossSiteScriptingCheck(output chan<- securityvalidations.OuputData, logger *logrus.Logger) engine.SecurityValidation {
 	checkConfig := securityvalidations.Config{
 		NumberWorkers: 2,
 		FileChannel:   make(chan string, 100),
@@ -48,7 +48,7 @@ func setupCrossSiteScriptingCheck(output chan<- securityvalidations.OuputData, l
 	return securityvalidations.NewCrossSiteScriptingCheck(checkConfig, logger)
 }
 
-func setupSensitiveDataCheck(output chan<- securityvalidations.OuputData, logger *logrus.Logger) engine.SecurityCodeCheck {
+func setupSensitiveDataCheck(output chan<- securityvalidations.OuputData, logger *logrus.Logger) engine.SecurityValidation {
 	checkConfig := securityvalidations.Config{
 		NumberWorkers: 2,
 		FileChannel:   make(chan string, 100),
@@ -58,7 +58,7 @@ func setupSensitiveDataCheck(output chan<- securityvalidations.OuputData, logger
 	return securityvalidations.NewSensitiveDataCheck(checkConfig, logger)
 }
 
-func setupSqlInjectionCheck(output chan<- securityvalidations.OuputData, logger *logrus.Logger) engine.SecurityCodeCheck {
+func setupSqlInjectionCheck(output chan<- securityvalidations.OuputData, logger *logrus.Logger) engine.SecurityValidation {
 	checkConfig := securityvalidations.Config{
 		NumberWorkers: 2,
 		FileChannel:   make(chan string, 100),

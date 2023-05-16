@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type SecurityCodeCheck interface {
+type SecurityValidation interface {
 	SubmitFile(path string)
 	CloseChannel()
 	Check()
@@ -22,13 +22,13 @@ type AnalylsisOuputFormat interface {
 }
 
 type SCSEngine struct {
-	SecurityValidations []SecurityCodeCheck
+	SecurityValidations []SecurityValidation
 	Output              AnalylsisOuputFormat
 	OuputChannel        chan securityvalidations.OuputData
 	logger              *logrus.Logger
 }
 
-func NewSCSEngine(securityValidationList []SecurityCodeCheck, output AnalylsisOuputFormat, outputChannel chan securityvalidations.OuputData, logger *logrus.Logger) SCSEngine {
+func NewSCSEngine(securityValidationList []SecurityValidation, output AnalylsisOuputFormat, outputChannel chan securityvalidations.OuputData, logger *logrus.Logger) SCSEngine {
 	return SCSEngine{
 		SecurityValidations: securityValidationList,
 		Output:              output,
@@ -64,7 +64,7 @@ func (s SCSEngine) RunSecurityChecks(sourcePath string) error {
 	})
 
 	if err != nil {
-		s.logger.Error(fmt.Sprintf("could not walk path %s : %s\n", sourcePath, err))
+		s.logger.Error(fmt.Sprintf("error searching path %s : %s\n", sourcePath, err))
 	}
 
 	for _, c := range s.SecurityValidations {
@@ -78,7 +78,7 @@ func (s SCSEngine) RunSecurityChecks(sourcePath string) error {
 	return nil
 }
 
-func (s SCSEngine) startCheck(securityValidation SecurityCodeCheck, wg *sync.WaitGroup) {
+func (s SCSEngine) startCheck(securityValidation SecurityValidation, wg *sync.WaitGroup) {
 	securityValidation.Check()
 	wg.Done()
 }
