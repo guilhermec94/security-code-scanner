@@ -1,17 +1,17 @@
 package securityvalidations_test
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/guilhermec94/security-code-scanner/pkg/logger"
 	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security_validations"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
-func setupSqlInjectionCheckTest() (securityvalidations.SqlInjectionCheck, chan securityvalidations.OuputData) {
+func setupSqlInjectionCheckTest() (securityvalidations.SqlInjectionValidation, chan securityvalidations.OuputData) {
 	fileChan := make(chan string, 100)
 	outputChannel := make(chan securityvalidations.OuputData, 100)
 	config := securityvalidations.Config{
@@ -20,16 +20,8 @@ func setupSqlInjectionCheckTest() (securityvalidations.SqlInjectionCheck, chan s
 		OutputChannel: outputChannel,
 	}
 
-	log := logrus.New()
-	logFile := "log-si.txt"
-	file, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-	if err != nil {
-		fmt.Println("Failed to create logfile" + logFile)
-		panic(err)
-	}
-	log.SetOutput(file)
-
-	check := securityvalidations.NewSqlInjectionCheck(config, log)
+	log := logger.NewFileLogger("log-si.txt")
+	check := securityvalidations.NewSqlInjectionValidation(config, log)
 
 	return check, outputChannel
 }
@@ -41,7 +33,7 @@ func cleanUpSqlInjectionCheckTest() {
 	}
 }
 
-func TestSqlInjectionCheck(t *testing.T) {
+func TestSqlInjectionValidation_Check(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// setup
 		check, outputChannel := setupSqlInjectionCheckTest()

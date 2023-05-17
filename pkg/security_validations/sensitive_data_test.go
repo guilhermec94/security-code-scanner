@@ -1,17 +1,17 @@
 package securityvalidations_test
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/guilhermec94/security-code-scanner/pkg/logger"
 	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security_validations"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
-func setupSensitiveDataCheckTest() (securityvalidations.SensitiveDataCheck, chan securityvalidations.OuputData) {
+func setupSensitiveDataCheckTest() (securityvalidations.SensitiveDataValidation, chan securityvalidations.OuputData) {
 	fileChan := make(chan string, 100)
 	outputChannel := make(chan securityvalidations.OuputData, 100)
 	config := securityvalidations.Config{
@@ -20,16 +20,9 @@ func setupSensitiveDataCheckTest() (securityvalidations.SensitiveDataCheck, chan
 		OutputChannel: outputChannel,
 	}
 
-	log := logrus.New()
-	logFile := "log-sd.txt"
-	file, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-	if err != nil {
-		fmt.Println("Failed to create logfile" + logFile)
-		panic(err)
-	}
-	log.SetOutput(file)
+	log := logger.NewFileLogger("log-sd.txt")
 
-	check := securityvalidations.NewSensitiveDataCheck(config, log)
+	check := securityvalidations.NewSensitiveDataValidation(config, log)
 
 	return check, outputChannel
 }
@@ -41,7 +34,7 @@ func cleanUpSensitiveDataCheckTest() {
 	}
 }
 
-func TestSensitiveDataCheck(t *testing.T) {
+func TestSensitiveDataValidation_Check(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// setup
 		check, outputChannel := setupSensitiveDataCheckTest()

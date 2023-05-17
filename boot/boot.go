@@ -7,12 +7,11 @@ import (
 	"github.com/guilhermec94/security-code-scanner/pkg/logger"
 	"github.com/guilhermec94/security-code-scanner/pkg/outputs"
 	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security_validations"
-	"github.com/sirupsen/logrus"
 )
 
 func Init(outputPath, outputType string) engine.SCSEngine {
 	outputChannel := make(chan securityvalidations.OuputData, 100)
-	log := logger.GetInstance()
+	log := logger.NewFileLogger("log.txt")
 
 	// checks
 	cSS := setupCrossSiteScriptingCheck(outputChannel, log)
@@ -38,32 +37,32 @@ func Init(outputPath, outputType string) engine.SCSEngine {
 	return engine.NewSCSEngine(securityValidationsList, outputFormat, outputChannel, log)
 }
 
-func setupCrossSiteScriptingCheck(output chan<- securityvalidations.OuputData, logger *logrus.Logger) engine.SecurityValidation {
+func setupCrossSiteScriptingCheck(output chan<- securityvalidations.OuputData, logger logger.CustomFileLogger) engine.SecurityValidation {
 	checkConfig := securityvalidations.Config{
 		NumberWorkers: 2,
 		FileChannel:   make(chan string, 100),
 		OutputChannel: output,
 	}
 
-	return securityvalidations.NewCrossSiteScriptingCheck(checkConfig, logger)
+	return securityvalidations.NewCrossSiteScriptingValidation(checkConfig, logger)
 }
 
-func setupSensitiveDataCheck(output chan<- securityvalidations.OuputData, logger *logrus.Logger) engine.SecurityValidation {
+func setupSensitiveDataCheck(output chan<- securityvalidations.OuputData, logger logger.CustomFileLogger) engine.SecurityValidation {
 	checkConfig := securityvalidations.Config{
 		NumberWorkers: 2,
 		FileChannel:   make(chan string, 100),
 		OutputChannel: output,
 	}
 
-	return securityvalidations.NewSensitiveDataCheck(checkConfig, logger)
+	return securityvalidations.NewSensitiveDataValidation(checkConfig, logger)
 }
 
-func setupSqlInjectionCheck(output chan<- securityvalidations.OuputData, logger *logrus.Logger) engine.SecurityValidation {
+func setupSqlInjectionCheck(output chan<- securityvalidations.OuputData, logger logger.CustomFileLogger) engine.SecurityValidation {
 	checkConfig := securityvalidations.Config{
 		NumberWorkers: 2,
 		FileChannel:   make(chan string, 100),
 		OutputChannel: output,
 	}
 
-	return securityvalidations.NewSqlInjectionCheck(checkConfig, logger)
+	return securityvalidations.NewSqlInjectionValidation(checkConfig, logger)
 }

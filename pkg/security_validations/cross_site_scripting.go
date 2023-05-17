@@ -6,31 +6,32 @@ import (
 	"regexp"
 	"sync"
 
+	"github.com/guilhermec94/security-code-scanner/pkg/logger"
 	"github.com/guilhermec94/security-code-scanner/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
-type CrossSiteScriptingCheck struct {
+type CrossSiteScriptingValidation struct {
 	Config
-	logger *logrus.Logger
+	logger logger.CustomFileLogger
 }
 
-func NewCrossSiteScriptingCheck(config Config, logger *logrus.Logger) CrossSiteScriptingCheck {
-	return CrossSiteScriptingCheck{
+func NewCrossSiteScriptingValidation(config Config, logger logger.CustomFileLogger) CrossSiteScriptingValidation {
+	return CrossSiteScriptingValidation{
 		Config: config,
 		logger: logger,
 	}
 }
 
-func (c CrossSiteScriptingCheck) SubmitFile(path string) {
+func (c CrossSiteScriptingValidation) SubmitFile(path string) {
 	c.FileChannel <- path
 }
 
-func (c CrossSiteScriptingCheck) CloseChannel() {
+func (c CrossSiteScriptingValidation) CloseChannel() {
 	close(c.FileChannel)
 }
 
-func (c CrossSiteScriptingCheck) Check() {
+func (c CrossSiteScriptingValidation) Check() {
 	var wg sync.WaitGroup
 
 	for i := 0; i < c.NumberWorkers; i++ {
@@ -41,7 +42,7 @@ func (c CrossSiteScriptingCheck) Check() {
 	wg.Wait()
 }
 
-func (c CrossSiteScriptingCheck) process(wg *sync.WaitGroup) {
+func (c CrossSiteScriptingValidation) process(wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for path := range c.FileChannel {
@@ -52,26 +53,26 @@ func (c CrossSiteScriptingCheck) process(wg *sync.WaitGroup) {
 
 }
 
-func (c CrossSiteScriptingCheck) analyseFile(path, fileName, extension string) {
+func (c CrossSiteScriptingValidation) analyseFile(path, fileName, extension string) {
 	if extension == ".html" || extension == ".js" {
 		file, scanner, err := utils.OpenFile(path)
 		defer func() {
 			err := utils.CloseFile(file)
 			if err != nil {
-				c.logger.Errorf("can't close file %s %v", fileName, err)
+				c.logger.Log(logrus.ErrorLevel, "CrossSiteScriptingValidation", fmt.Sprintf("can't close file %s %v", fileName, err))
 				return
 			}
 		}()
 
 		if err != nil {
-			c.logger.Errorf("can't open file  %s %v", fileName, err)
+			c.logger.Log(logrus.ErrorLevel, "CrossSiteScriptingValidation", fmt.Sprintf("can't open file %s %v", fileName, err))
 			return
 		}
 
 		pattern := ".*(Alert\\(\\))+.*"
 		reg, err := regexp.Compile(pattern)
 		if err != nil {
-			c.logger.Error(fmt.Sprintf("could not compile regex pattern: %s\n", err))
+			c.logger.Log(logrus.ErrorLevel, "CrossSiteScriptingValidation", fmt.Sprintf("could not compile regex pattern: %s\n", err))
 		} else {
 			err = utils.ScanFile(scanner, func(data []byte, lineNumber int) {
 				matched := reg.Match(data)
@@ -81,7 +82,7 @@ func (c CrossSiteScriptingCheck) analyseFile(path, fileName, extension string) {
 			})
 
 			if err != nil {
-				c.logger.Errorf("error scanning file %s %v", fileName, err)
+				c.logger.Log(logrus.ErrorLevel, "CrossSiteScriptingValidation", fmt.Sprintf("error scanning file %s %v", fileName, err))
 			}
 		}
 	}

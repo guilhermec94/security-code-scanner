@@ -1,34 +1,36 @@
 package securityvalidations
 
 import (
+	"fmt"
 	"path/filepath"
 	"sync"
 
+	"github.com/guilhermec94/security-code-scanner/pkg/logger"
 	"github.com/guilhermec94/security-code-scanner/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
-type SensitiveDataCheck struct {
+type SensitiveDataValidation struct {
 	Config
-	logger *logrus.Logger
+	logger logger.CustomFileLogger
 }
 
-func NewSensitiveDataCheck(config Config, logger *logrus.Logger) SensitiveDataCheck {
-	return SensitiveDataCheck{
+func NewSensitiveDataValidation(config Config, logger logger.CustomFileLogger) SensitiveDataValidation {
+	return SensitiveDataValidation{
 		Config: config,
 		logger: logger,
 	}
 }
 
-func (c SensitiveDataCheck) SubmitFile(path string) {
+func (c SensitiveDataValidation) SubmitFile(path string) {
 	c.Config.FileChannel <- path
 }
 
-func (c SensitiveDataCheck) CloseChannel() {
+func (c SensitiveDataValidation) CloseChannel() {
 	close(c.FileChannel)
 }
 
-func (s SensitiveDataCheck) Check() {
+func (s SensitiveDataValidation) Check() {
 	var wg sync.WaitGroup
 
 	for i := 0; i < s.NumberWorkers; i++ {
@@ -39,7 +41,7 @@ func (s SensitiveDataCheck) Check() {
 	wg.Wait()
 }
 
-func (s SensitiveDataCheck) process(wg *sync.WaitGroup) {
+func (s SensitiveDataValidation) process(wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for path := range s.FileChannel {
@@ -49,18 +51,18 @@ func (s SensitiveDataCheck) process(wg *sync.WaitGroup) {
 
 }
 
-func (s SensitiveDataCheck) analyseFile(path, fileName string) {
+func (s SensitiveDataValidation) analyseFile(path, fileName string) {
 	file, scanner, err := utils.OpenFile(path)
 	defer func() {
 		err := utils.CloseFile(file)
 		if err != nil {
-			s.logger.Errorf("can't close file %s %v", fileName, err)
+			s.logger.Log(logrus.ErrorLevel, "SensitiveDataValidation", fmt.Sprintf("can't close file %s %v", fileName, err))
 			return
 		}
 	}()
 
 	if err != nil {
-		s.logger.Errorf("can't open file  %s %v", fileName, err)
+		s.logger.Log(logrus.ErrorLevel, "SensitiveDataValidation", fmt.Sprintf("can't open file %s %v", fileName, err))
 		return
 	}
 
@@ -72,7 +74,7 @@ func (s SensitiveDataCheck) analyseFile(path, fileName string) {
 	})
 
 	if err != nil {
-		s.logger.Errorf("error scanning file %s %v", fileName, err)
+		s.logger.Log(logrus.ErrorLevel, "SensitiveDataValidation", fmt.Sprintf("error scanning file %s %v", fileName, err))
 	}
 
 }

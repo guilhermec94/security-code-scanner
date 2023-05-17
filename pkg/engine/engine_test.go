@@ -1,13 +1,13 @@
 package engine_test
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/guilhermec94/security-code-scanner/pkg/engine"
+	"github.com/guilhermec94/security-code-scanner/pkg/logger"
 	"github.com/guilhermec94/security-code-scanner/pkg/outputs"
 	securityvalidations "github.com/guilhermec94/security-code-scanner/pkg/security_validations"
 	"github.com/sirupsen/logrus"
@@ -16,14 +16,7 @@ import (
 
 func setupTest() engine.SCSEngine {
 	outputChannel := make(chan securityvalidations.OuputData, 100)
-	log := logrus.New()
-	logFile := "log-engine.txt"
-	file, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-	if err != nil {
-		fmt.Println("Failed to create logfile" + logFile)
-		panic(err)
-	}
-	log.SetOutput(file)
+	log := logger.NewFileLogger("log-engine.txt")
 
 	// checks
 	checkConfigCSS := securityvalidations.Config{
@@ -32,7 +25,7 @@ func setupTest() engine.SCSEngine {
 		OutputChannel: outputChannel,
 	}
 
-	cSS := securityvalidations.NewCrossSiteScriptingCheck(checkConfigCSS, log)
+	cSS := securityvalidations.NewCrossSiteScriptingValidation(checkConfigCSS, log)
 
 	checkConfigSD := securityvalidations.Config{
 		NumberWorkers: 2,
@@ -40,7 +33,7 @@ func setupTest() engine.SCSEngine {
 		OutputChannel: outputChannel,
 	}
 
-	sD := securityvalidations.NewSensitiveDataCheck(checkConfigSD, log)
+	sD := securityvalidations.NewSensitiveDataValidation(checkConfigSD, log)
 
 	checkConfigSQLI := securityvalidations.Config{
 		NumberWorkers: 2,
@@ -48,7 +41,7 @@ func setupTest() engine.SCSEngine {
 		OutputChannel: outputChannel,
 	}
 
-	sqlI := securityvalidations.NewSqlInjectionCheck(checkConfigSQLI, log)
+	sqlI := securityvalidations.NewSqlInjectionValidation(checkConfigSQLI, log)
 
 	//security validations list
 	securityValidationsList := make([]engine.SecurityValidation, 0)
@@ -81,7 +74,7 @@ func cleanUpTest() {
 	}
 }
 
-func TestRunSecurityChecks(t *testing.T) {
+func TestEngine_RunSecurityChecks(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// setup
 		engine := setupTest()

@@ -25,10 +25,10 @@ type SCSEngine struct {
 	SecurityValidations []SecurityValidation
 	Output              AnalylsisOuputFormat
 	OuputChannel        chan securityvalidations.OuputData
-	logger              *logrus.Logger
+	logger              logger.CustomFileLogger
 }
 
-func NewSCSEngine(securityValidationList []SecurityValidation, output AnalylsisOuputFormat, outputChannel chan securityvalidations.OuputData, logger *logrus.Logger) SCSEngine {
+func NewSCSEngine(securityValidationList []SecurityValidation, output AnalylsisOuputFormat, outputChannel chan securityvalidations.OuputData, logger logger.CustomFileLogger) SCSEngine {
 	return SCSEngine{
 		SecurityValidations: securityValidationList,
 		Output:              output,
@@ -41,7 +41,7 @@ func (s SCSEngine) RunSecurityChecks(sourcePath string) {
 	var wg sync.WaitGroup
 	doneReadingResults := make(chan bool)
 
-	defer logger.CloseLog()
+	defer s.logger.CloseLog()
 
 	for _, c := range s.SecurityValidations {
 		wg.Add(1)
@@ -52,7 +52,7 @@ func (s SCSEngine) RunSecurityChecks(sourcePath string) {
 
 	err := filepath.WalkDir(sourcePath, func(path string, file fs.DirEntry, err error) error {
 		if err != nil {
-			s.logger.Error(fmt.Sprintf("could not walk path %s : %s\n", path, err))
+			s.logger.Log(logrus.ErrorLevel, "SCSEngine", fmt.Sprintf("could not walk path %s : %s\n", path, err))
 			return err
 		}
 		if !file.IsDir() {
@@ -64,7 +64,7 @@ func (s SCSEngine) RunSecurityChecks(sourcePath string) {
 	})
 
 	if err != nil {
-		s.logger.Error(fmt.Sprintf("error searching path %s : %s\n", sourcePath, err))
+		s.logger.Log(logrus.ErrorLevel, "SCSEngine", fmt.Sprintf("error searching path %s : %s\n", sourcePath, err))
 		return
 	}
 
