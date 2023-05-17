@@ -1,9 +1,12 @@
 # Security Code Scanner
 
 ## Techstack
-- Golang
-- Cobra for setting up console commands
-- Logrus for structured logs
+
+| Tool                                                                                  | Usage                                        |
+|:--------------------------------------------------------------------------------------|:---------------------------------------------|
+| [GoLang](https://go.dev/)                                                             | Build this tool                              |
+| [Cobra](https://github.com/spf13/cobra)                                               | Create cli commands                          |
+| [Logrus](https://github.com/sirupsen/logrus)                                          | Have structured logs                         |
 
 ## How to
 In order to run the scanner you need to provide 3 arguments in the following order
@@ -23,3 +26,4 @@ Or using the compiled binary file
 ## Improvements
 - Convert source code from any language to a commun model to be analyzed
     - Would need a parser for each language to obtain a AST (Abstract Syntax Tree, for example)
+    - Currently comments are also catched in the validations, applying this approach of a AST would allow to filter them out from the validation

@@ -50,7 +50,6 @@ func (c CrossSiteScriptingValidation) process(wg *sync.WaitGroup) {
 		extension := filepath.Ext(path)
 		c.analyseFile(path, fileName, extension)
 	}
-
 }
 
 func (c CrossSiteScriptingValidation) analyseFile(path, fileName, extension string) {
@@ -73,17 +72,18 @@ func (c CrossSiteScriptingValidation) analyseFile(path, fileName, extension stri
 		reg, err := regexp.Compile(pattern)
 		if err != nil {
 			c.logger.Log(logrus.ErrorLevel, "CrossSiteScriptingValidation", fmt.Sprintf("could not compile regex pattern: %s\n", err))
-		} else {
-			err = utils.ScanFile(scanner, func(data []byte, lineNumber int) {
-				matched := reg.Match(data)
-				if matched {
-					c.OutputChannel <- OuputData{Vulnerability: CROSS_SITE_SCRIPTING, File: fileName, Line: lineNumber}
-				}
-			})
+			return
+		}
 
-			if err != nil {
-				c.logger.Log(logrus.ErrorLevel, "CrossSiteScriptingValidation", fmt.Sprintf("error scanning file %s %v", fileName, err))
+		err = utils.ScanFile(scanner, func(data []byte, lineNumber int) {
+			matched := reg.Match(data)
+			if matched {
+				c.OutputChannel <- OuputData{Vulnerability: CROSS_SITE_SCRIPTING, File: fileName, Line: lineNumber}
 			}
+		})
+
+		if err != nil {
+			c.logger.Log(logrus.ErrorLevel, "CrossSiteScriptingValidation", fmt.Sprintf("error scanning file %s %v", fileName, err))
 		}
 	}
 }

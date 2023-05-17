@@ -11,28 +11,35 @@ var scanner = &cobra.Command{
 	Use:   "scanner",
 	Short: "Scan source code",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("the path argument is required")
+		sourcePath, _ := cmd.Flags().GetString("source")
+		output, _ := cmd.Flags().GetString("output")
+		outputFormat, _ := cmd.Flags().GetString("output-format")
+		if len(sourcePath) == 0 {
+			return errors.New("the source path argument is required")
 		}
 
-		if len(args) < 2 {
+		if len(output) == 0 {
 			return errors.New("the output path argument is required")
 		}
 
-		if len(args) < 3 {
+		if len(outputFormat) == 0 {
 			return errors.New("the output format argument is required")
 		}
 
-		runCommand(args)
+		runCommand(sourcePath, output, outputFormat)
 		return nil
 	},
 }
 
-func runCommand(args []string) {
-	engine := boot.Init(args[0], args[2])
-	engine.RunSecurityChecks(args[1])
+func runCommand(sourcePath, output, outputFormat string) {
+	engine := boot.Init(output, outputFormat)
+	engine.RunSecurityChecks(sourcePath)
 }
 
 func init() {
 	root.AddCommand(scanner)
+
+	scanner.PersistentFlags().String("source", "", "set the source path")
+	scanner.PersistentFlags().String("output", "", "set the output path")
+	scanner.PersistentFlags().String("output-format", "", "set the output format")
 }

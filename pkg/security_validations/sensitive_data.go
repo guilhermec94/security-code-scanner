@@ -48,7 +48,6 @@ func (s SensitiveDataValidation) process(wg *sync.WaitGroup) {
 		fileName := filepath.Base(path)
 		s.analyseFile(path, fileName)
 	}
-
 }
 
 func (s SensitiveDataValidation) analyseFile(path, fileName string) {

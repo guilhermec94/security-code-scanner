@@ -25,6 +25,9 @@ public class ConfigContainer {
     /**
      * Attempts to update the server's existing configuration to the latest
      */
+    /**
+     * "SELECT name FROM campaigns WHERE id = %s"
+    */
     public static void updateConfig() {
         try { // Check if the server is using a legacy config.
             JsonObject configObject = JsonUtils.loadToClass(Grasscutter.configFile.toPath(), JsonObject.class);

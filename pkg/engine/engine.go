@@ -17,18 +17,18 @@ type SecurityValidation interface {
 	Check()
 }
 
-type AnalylsisOuputFormat interface {
+type AnalysisOuputFormat interface {
 	ProcessResults(done chan bool)
 }
 
 type SCSEngine struct {
 	SecurityValidations []SecurityValidation
-	Output              AnalylsisOuputFormat
+	Output              AnalysisOuputFormat
 	OuputChannel        chan securityvalidations.OuputData
 	logger              logger.CustomFileLogger
 }
 
-func NewSCSEngine(securityValidationList []SecurityValidation, output AnalylsisOuputFormat, outputChannel chan securityvalidations.OuputData, logger logger.CustomFileLogger) SCSEngine {
+func NewSCSEngine(securityValidationList []SecurityValidation, output AnalysisOuputFormat, outputChannel chan securityvalidations.OuputData, logger logger.CustomFileLogger) SCSEngine {
 	return SCSEngine{
 		SecurityValidations: securityValidationList,
 		Output:              output,

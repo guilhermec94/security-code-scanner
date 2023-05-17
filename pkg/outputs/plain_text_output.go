@@ -9,24 +9,24 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type PlainTextOutput struct {
+type PlainTextOutputFormat struct {
 	OutputPath    string
 	OutputChannel <-chan securityvalidations.OuputData
 	logger        logger.CustomFileLogger
 }
 
-func NewPlainTextOutput(outputPath string, outputChannel <-chan securityvalidations.OuputData, logger logger.CustomFileLogger) PlainTextOutput {
-	return PlainTextOutput{
+func NewPlainTextOutputFormat(outputPath string, outputChannel <-chan securityvalidations.OuputData, logger logger.CustomFileLogger) PlainTextOutputFormat {
+	return PlainTextOutputFormat{
 		OutputPath:    outputPath,
 		OutputChannel: outputChannel,
 		logger:        logger,
 	}
 }
 
-func (p PlainTextOutput) ProcessResults(done chan bool) {
+func (p PlainTextOutputFormat) ProcessResults(done chan bool) {
 	f, err := os.Create(p.OutputPath + "/output.txt")
 	if err != nil {
-		p.logger.Log(logrus.ErrorLevel, "PlainTextOutput", fmt.Sprintf("could not create file: %s\n", err))
+		p.logger.Log(logrus.ErrorLevel, "PlainTextOutputFormat", fmt.Sprintf("could not create file: %s\n", err))
 		f.Close()
 		done <- true
 		return
@@ -37,17 +37,17 @@ func (p PlainTextOutput) ProcessResults(done chan bool) {
 	}
 	err = f.Close()
 	if err != nil {
-		p.logger.Log(logrus.ErrorLevel, "PlainTextOutput", fmt.Sprintf("could not close file: %s\n", err))
+		p.logger.Log(logrus.ErrorLevel, "PlainTextOutputFormat", fmt.Sprintf("could not close file: %s\n", err))
 		done <- true
 		return
 	}
 	done <- true
 }
 
-func (p PlainTextOutput) write(file *os.File, data string, done chan bool) {
+func (p PlainTextOutputFormat) write(file *os.File, data string, done chan bool) {
 	_, err := fmt.Fprintln(file, data)
 	if err != nil {
-		p.logger.Log(logrus.ErrorLevel, "PlainTextOutput", fmt.Sprintf("could not write to file: %s\n", err))
+		p.logger.Log(logrus.ErrorLevel, "PlainTextOutputFormat", fmt.Sprintf("could not write to file: %s\n", err))
 		done <- true
 	}
 }

@@ -49,7 +49,6 @@ func (s SqlInjectionValidation) process(wg *sync.WaitGroup) {
 		fileName := filepath.Base(path)
 		s.analyseFile(path, fileName)
 	}
-
 }
 
 func (s SqlInjectionValidation) analyseFile(path, fileName string) {
@@ -71,16 +70,17 @@ func (s SqlInjectionValidation) analyseFile(path, fileName string) {
 	reg, err := regexp.Compile(pattern)
 	if err != nil {
 		s.logger.Log(logrus.ErrorLevel, "SqlInjectionValidation", fmt.Sprintf("could not compile regex pattern: %s\n", err))
-	} else {
-		err = utils.ScanFile(scanner, func(data []byte, lineNumber int) {
-			matched := reg.Match(data)
-			if matched {
-				s.OutputChannel <- OuputData{Vulnerability: SQL_INJECTION, File: fileName, Line: lineNumber}
-			}
-		})
+		return
+	}
 
-		if err != nil {
-			s.logger.Log(logrus.ErrorLevel, "SqlInjectionValidation", fmt.Sprintf("error scanning file %s %v", fileName, err))
+	err = utils.ScanFile(scanner, func(data []byte, lineNumber int) {
+		matched := reg.Match(data)
+		if matched {
+			s.OutputChannel <- OuputData{Vulnerability: SQL_INJECTION, File: fileName, Line: lineNumber}
 		}
+	})
+
+	if err != nil {
+		s.logger.Log(logrus.ErrorLevel, "SqlInjectionValidation", fmt.Sprintf("error scanning file %s %v", fileName, err))
 	}
 }

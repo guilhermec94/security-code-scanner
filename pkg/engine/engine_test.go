@@ -51,12 +51,12 @@ func setupTest() engine.SCSEngine {
 	securityValidationsList = append(securityValidationsList, sqlI)
 
 	// set output format
-	var outputFormat engine.AnalylsisOuputFormat
+	var outputFormat engine.AnalysisOuputFormat
 	switch strings.ToLower("text") {
 	case "text":
-		outputFormat = outputs.NewPlainTextOutput(".", outputChannel, log)
+		outputFormat = outputs.NewPlainTextOutputFormat(".", outputChannel, log)
 	case "json":
-		outputFormat = outputs.NewJSONOutput(".", outputChannel, log)
+		outputFormat = outputs.NewJSONOutputFormat(".", outputChannel, log)
 	}
 
 	return engine.NewSCSEngine(securityValidationsList, outputFormat, outputChannel, log)

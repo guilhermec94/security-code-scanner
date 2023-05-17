@@ -26,12 +26,12 @@ func Init(outputPath, outputType string) engine.SCSEngine {
 	securityValidationsList = append(securityValidationsList, sqlI)
 
 	// set output format
-	var outputFormat engine.AnalylsisOuputFormat
+	var outputFormat engine.AnalysisOuputFormat
 	switch strings.ToLower(outputType) {
 	case "text":
-		outputFormat = outputs.NewPlainTextOutput(outputPath, outputChannel, log)
+		outputFormat = outputs.NewPlainTextOutputFormat(outputPath, outputChannel, log)
 	case "json":
-		outputFormat = outputs.NewJSONOutput(outputPath, outputChannel, log)
+		outputFormat = outputs.NewJSONOutputFormat(outputPath, outputChannel, log)
 	}
 
 	return engine.NewSCSEngine(securityValidationsList, outputFormat, outputChannel, log)
