@@ -56,7 +56,7 @@ func TestSqlInjectionValidation_Check(t *testing.T) {
 		}
 
 		size := fi.Size()
-		assert.Equal(t, 2, len(outputChannel))
+		assert.Equal(t, 3, len(outputChannel))
 		assert.Equal(t, int64(0), size)
 		t.Cleanup(func() { cleanUpSqlInjectionCheckTest() })
 	})
