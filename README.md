@@ -1,6 +1,6 @@
 # Security Code Scanner
 
-## Techstack
+## Tech stack
 - [GoLang](https://go.dev/) 
 - [Cobra](https://github.com/spf13/cobra) 
 - [Logrus](https://github.com/sirupsen/logrus)
