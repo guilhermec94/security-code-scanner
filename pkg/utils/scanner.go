@@ -11,7 +11,7 @@ func OpenFile(path string) (*os.File, *bufio.Scanner, error) {
 		return nil, nil, err
 	}
 	scanner := bufio.NewScanner(file)
-	buf := make([]byte, 0, 64*1024)
+	buf := []byte{}
 	scanner.Buffer(buf, 1024*1024)
 
 	return file, scanner, nil
