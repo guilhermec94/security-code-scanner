@@ -1,12 +1,9 @@
 # Security Code Scanner
 
 ## Techstack
-
-| Tool                                         | Usage                |
-| :------------------------------------------- | :------------------- |
-| [GoLang](https://go.dev/)                    | Build this tool      |
-| [Cobra](https://github.com/spf13/cobra)      | Create cli commands  |
-| [Logrus](https://github.com/sirupsen/logrus) | Have structured logs |
+- [GoLang](https://go.dev/) 
+- [Cobra](https://github.com/spf13/cobra) 
+- [Logrus](https://github.com/sirupsen/logrus)
 
 ## How to
 
@@ -26,6 +23,6 @@ Or using the compiled executable file which can be obtained by running the comma
 
 ## Improvements
 
-- In order for this tool to be able to perform a more rigorous analysis one improvement would be to convert all source code from any language to a common model to be analyzed
+- In order for this tool to be able to perform a more rigorous analysis, one improvement would be to convert all source code from any language to a common model to be analyzed
   - It would need a parser implementation for each language to obtain a AST (Abstract Syntax Tree) for example
-- Scan configuration could be served as a config file which would allow to defined other settings as for example, set the number of workers for each type of security validation. 
+- Scan configuration could be served as a config file which would allow to define other settings such as for example, set the number of workers for each type of security validation. 
